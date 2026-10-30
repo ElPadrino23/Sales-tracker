@@ -1,11 +1,12 @@
-# Control de Ventas (Cloudflare Pages + Supabase)
+# Control de Ventas (Cloudflare Workers + Supabase)
 
 Panel para seguir ventas de Mercado Libre y TikTok Shop con tres perfiles
 (administrador, operador, lector).
 
 ```
-Navegador ──> Cloudflare Pages (public/)              página estática
-          └─> Pages Functions  /api/*  (src/api.js)   login, roles, validación
+Navegador ──> Worker de Cloudflare (src/worker.js)
+                ├─ archivos estáticos  public/
+                └─ /api/*  (src/api.js)           login, roles, validación
                     └─> Supabase (Postgres + Auth)    datos
 ```
 
@@ -29,25 +30,24 @@ Navegador ──> Cloudflare Pages (public/)              página estática
 6. Project Settings > API: copia `Project URL`, `anon key` y `service_role key`.
    La `service_role` es secreta: solo va en Cloudflare, nunca en el código ni en GitHub.
 
-## 2. Cloudflare Pages
+## 2. Cloudflare (Worker con archivos estáticos)
 
-Opción A, con GitHub (recomendada):
-1. Sube esta carpeta a un repositorio privado.
-2. Cloudflare > Workers & Pages > Create > Pages > Connect to Git.
-3. Framework: None. Build command: vacío. Build output directory: `public`.
-4. Settings > Variables and Secrets:
-   - `SUPABASE_URL` (texto)
-   - `SUPABASE_ANON_KEY` (secreto)
-   - `SUPABASE_SERVICE_ROLE_KEY` (secreto)
-5. Re-despliega. La carpeta `functions/` se detecta sola.
+El proyecto se despliega como un Worker que sirve `public/` y atiende `/api/*`.
 
-Opción B, con terminal:
+Con GitHub (recomendado):
+1. Cloudflare > Workers & Pages > Create > Import a repository, y elige este repo.
+2. El nombre del proyecto debe ser `sales-tracker` (igual al `name` de `wrangler.toml`).
+3. Build command: vacío. Deploy command: `npx wrangler deploy`. Root directory: `/`.
+4. Edita `SUPABASE_URL` en `wrangler.toml` con la URL de tu proyecto y haz commit.
+5. Después del primer despliegue: Worker > Settings > Variables and Secrets > agrega como **Secret**
+   `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY`. Luego vuelve a desplegar.
+
+Con terminal:
 ```bash
 npm install
 npx wrangler login
-# edita SUPABASE_URL en wrangler.toml
-npx wrangler pages secret put SUPABASE_ANON_KEY --project-name control-ventas
-npx wrangler pages secret put SUPABASE_SERVICE_ROLE_KEY --project-name control-ventas
+npx wrangler secret put SUPABASE_ANON_KEY
+npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 npm run deploy
 ```
 
@@ -55,7 +55,7 @@ npm run deploy
 
 - Entra con tu correo. En la pestaña **Equipo** agrega a las otras 2 personas con una contraseña temporal; cada quien la cambia con el botón Contraseña.
 - Recomendado: en Cloudflare > Security > WAF > Rate limiting rules, limita `POST /api/login` (por ejemplo 10 intentos por minuto por IP).
-- Opcional: conecta tu dominio en Pages > Custom domains.
+- Opcional: conecta tu dominio en Worker > Settings > Domains & Routes.
 
 ## Local
 

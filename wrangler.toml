@@ -1,9 +1,17 @@
-name = "control-ventas"
+# El nombre debe ser igual al del Worker en Cloudflare (sales-tracker).
+name = "sales-tracker"
+main = "src/worker.js"
 compatibility_date = "2026-10-01"
-pages_build_output_dir = "public"
 
-# URL de tu proyecto Supabase (no es secreta). Las llaves van como secretos:
-#   wrangler pages secret put SUPABASE_ANON_KEY --project-name control-ventas
-#   wrangler pages secret put SUPABASE_SERVICE_ROLE_KEY --project-name control-ventas
+# La página (public/) se sirve como archivos estáticos.
+# Todo lo que no sea un archivo, como /api/*, entra al Worker.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# URL de tu proyecto Supabase (no es secreta).
+# Las llaves van como secretos en Cloudflare: Worker > Settings > Variables and Secrets
+#   SUPABASE_ANON_KEY
+#   SUPABASE_SERVICE_ROLE_KEY
 [vars]
 SUPABASE_URL = "https://TU-PROYECTO.supabase.co"
