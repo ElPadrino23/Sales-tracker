@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Control de Ventas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- Acceso -->
+<div class="login hidden" id="loginView">
+  <div class="card">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">$</div>
+      <div><h1>Control de Ventas</h1><small>Mercado Libre y TikTok Shop</small></div>
+    </div>
+    <form id="loginForm" novalidate>
+      <div><label class="f" for="lgEmail">Correo</label><input type="email" id="lgEmail" autocomplete="username" required></div>
+      <div><label class="f" for="lgPass">Contraseña</label><input type="password" id="lgPass" autocomplete="current-password" required></div>
+      <div class="err hidden" id="lgErr" role="alert"></div>
+      <button class="btn primary" type="submit" id="lgBtn">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<!-- App -->
+<div id="appView" class="hidden">
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">$</div>
+      <div><h1>Control de Ventas</h1><small>Mercado Libre y TikTok Shop</small></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button class="tab" role="tab" data-tab="ventas" aria-selected="true">Ventas</button>
+      <button class="tab" role="tab" data-tab="productos" aria-selected="false">Productos</button>
+      <button class="tab hidden" role="tab" data-tab="equipo" id="tabEquipo" aria-selected="false">Equipo</button>
+    </nav>
+    <div class="who">
+      <span id="whoName"></span><span class="role" id="roleChip"></span>
+      <button class="btn" type="button" id="btnPass">Contraseña</button>
+      <button class="btn" type="button" id="btnOut">Salir</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="notice" class="card hidden" style="margin-bottom:16px"></div>
+
+  <section id="view-ventas">
+    <div class="tiles" id="tiles"></div>
+    <div class="bar">
+      <input type="text" id="q" class="grow" placeholder="Buscar por No. de venta, SKU, guía u observaciones" aria-label="Buscar ventas">
+      <select id="fCanal" aria-label="Filtrar por canal">
+        <option value="">Todos los canales</option>
+        <option value="ml">Mercado Libre</option>
+        <option value="tt">TikTok Shop</option>
+      </select>
+      <select id="fEstatus" aria-label="Filtrar por estatus"></select>
+      <button class="btn" id="btnCopy" type="button">Copiar tabla</button>
+      <button class="btn primary" id="btnNewSale" type="button">+ Nueva venta</button>
+    </div>
+    <div class="wrap">
+      <table>
+        <thead><tr>
+          <th>Fecha de ingreso</th><th>No. de venta</th><th>SKU</th><th>Tipo de prov.</th>
+          <th class="r">$ prov.</th><th class="r">$ total</th><th>Guía / paquetería</th><th>Estatus de envío</th><th>Observaciones</th>
+        </tr></thead>
+        <tbody id="salesBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="view-productos" class="hidden">
+    <div class="bar">
+      <input type="text" id="qp" class="grow" placeholder="Buscar por SKU, nombre o proveedor" aria-label="Buscar productos">
+      <button class="btn primary" id="btnNewProd" type="button">+ Nuevo producto</button>
+    </div>
+    <div class="wrap">
+      <table style="min-width:860px">
+        <thead><tr>
+          <th>SKU</th><th>Producto</th><th>Tipo de prov.</th><th class="r">$ prov. (c/u)</th>
+          <th class="r">Precio Mercado Libre</th><th class="r">Precio TikTok Shop</th><th>Estado</th>
+        </tr></thead>
+        <tbody id="prodBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="view-equipo" class="hidden">
+    <div class="roles">
+      <div class="card"><span class="lvl">Administrador</span><h3>Control total</h3>
+        <ul><li>Catálogo, costos y precios</li><li>Registrar, editar y eliminar ventas</li><li>Alta y baja de personas</li></ul></div>
+      <div class="card"><span class="lvl">Operador</span><h3>Operación diaria</h3>
+        <ul><li>Registrar y editar ventas</li><li>Guía, estatus y observaciones</li><li>No toca productos ni costos</li></ul></div>
+      <div class="card"><span class="lvl">Lector</span><h3>Solo consulta</h3>
+        <ul><li>Ve ventas, productos y resumen</li><li>No cambia nada</li></ul></div>
+    </div>
+    <div class="bar"><span class="grow sub">Personas con acceso al panel</span><button class="btn primary" id="btnNewMember" type="button">+ Agregar persona</button></div>
+    <div class="wrap">
+      <table class="members" style="min-width:640px">
+        <thead><tr><th>Nombre</th><th>Correo</th><th>Perfil</th><th>Acceso</th></tr></thead>
+        <tbody id="teamBody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toast" class="toast hidden" role="status"></div>
+<script src="/app.js"></script>
+</body>
+</html>

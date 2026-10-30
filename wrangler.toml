@@ -1,0 +1,9 @@
+name = "control-ventas"
+compatibility_date = "2026-10-01"
+pages_build_output_dir = "public"
+
+# URL de tu proyecto Supabase (no es secreta). Las llaves van como secretos:
+#   wrangler pages secret put SUPABASE_ANON_KEY --project-name control-ventas
+#   wrangler pages secret put SUPABASE_SERVICE_ROLE_KEY --project-name control-ventas
+[vars]
+SUPABASE_URL = "https://TU-PROYECTO.supabase.co"
