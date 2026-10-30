@@ -175,7 +175,16 @@ async function login(request, env, secure) {
     body: JSON.stringify({ email, password }),
   });
   if (res.status === 429) throw new ApiError(429, "Demasiados intentos. Espera unos minutos.");
-  if (!res.ok) throw new ApiError(401, "Correo o contraseña incorrectos.");
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    if (e.error_code === "email_not_confirmed") throw new ApiError(403, "Ese correo aún no está confirmado en Supabase. Confírmalo o crea el usuario con Auto Confirm.");
+    // 400 = credenciales malas. Cualquier otro código apunta a la configuración (URL o llave).
+    if (res.status !== 400) {
+      console.error("supabase_login_error", res.status, e.error_code || e.message || "");
+      throw new ApiError(502, "No se pudo conectar con Supabase. Revisa SUPABASE_URL y SUPABASE_ANON_KEY del servidor.");
+    }
+    throw new ApiError(401, "Correo o contraseña incorrectos.");
+  }
   const t = await res.json();
   const m = await memberOf(env, t.user && t.user.id);
   if (!m || !m.activo) throw new ApiError(403, "Tu cuenta no tiene acceso a este panel.");
