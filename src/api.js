@@ -56,11 +56,13 @@ const round2 = (n) => Math.round(n * 100) / 100;
 
 // ------------------------------------------------------------- Supabase
 function cfg(env) {
-  const url = (env.SUPABASE_URL || "").replace(/\/+$/, "");
-  if (!url || !env.SUPABASE_ANON_KEY || !env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new ApiError(500, "Falta configurar Supabase en el servidor.");
-  }
-  return { url, anon: env.SUPABASE_ANON_KEY, svc: env.SUPABASE_SERVICE_ROLE_KEY };
+  const anon = String(env.SUPABASE_ANON_KEY || "").trim();
+  const svc = String(env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+  if (!env.SUPABASE_URL || !anon || !svc) throw new ApiError(500, "Falta configurar Supabase en el servidor.");
+  let url;
+  try { url = new URL(String(env.SUPABASE_URL).trim()).origin; } // tolera "/rest/v1/" u otros restos al pegar
+  catch { throw new ApiError(500, "SUPABASE_URL no es una URL válida."); }
+  return { url, anon, svc };
 }
 
 async function rest(env, path, { method = "GET", body, prefer } = {}) {
@@ -169,11 +171,17 @@ async function login(request, env, secure) {
   const email = str(b.email, 200, "el correo", { required: true }).toLowerCase();
   const password = str(b.password, 200, "la contraseña", { required: true });
   const { url, anon } = cfg(env);
-  const res = await fetch(`${url}/auth/v1/token?grant_type=password`, {
-    method: "POST",
-    headers: { apikey: anon, "content-type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
+  let res;
+  try {
+    res = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: { apikey: anon, "content-type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+  } catch (err) {
+    console.error("supabase_login_unreachable", err && err.message);
+    throw new ApiError(502, "No se pudo alcanzar Supabase. Revisa que SUPABASE_URL sea la URL real de tu proyecto.");
+  }
   if (res.status === 429) throw new ApiError(429, "Demasiados intentos. Espera unos minutos.");
   if (!res.ok) {
     const e = await res.json().catch(() => ({}));
@@ -181,7 +189,9 @@ async function login(request, env, secure) {
     // 400 = credenciales malas. Cualquier otro código apunta a la configuración (URL o llave).
     if (res.status !== 400) {
       console.error("supabase_login_error", res.status, e.error_code || e.message || "");
-      throw new ApiError(502, "No se pudo conectar con Supabase. Revisa SUPABASE_URL y SUPABASE_ANON_KEY del servidor.");
+      if (res.status === 401 || res.status === 403) throw new ApiError(502, "Supabase rechazó la llave (SUPABASE_ANON_KEY). Copia de nuevo la llave anon de la pestaña Legacy API Keys.");
+      if (res.status === 404) throw new ApiError(502, "Supabase no encontró esa URL. En SUPABASE_URL va solo https://tu-proyecto.supabase.co.");
+      throw new ApiError(502, `Supabase respondió con el código ${res.status}. Intenta de nuevo en un minuto.`);
     }
     throw new ApiError(401, "Correo o contraseña incorrectos.");
   }
