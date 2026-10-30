@@ -14,4 +14,4 @@ binding = "ASSETS"
 #   SUPABASE_ANON_KEY
 #   SUPABASE_SERVICE_ROLE_KEY
 [vars]
-SUPABASE_URL = "https://TU-PROYECTO.supabase.co"
+SUPABASE_URL = "https://qrjdnufmxzucfhwcldbj.supabase.co"
